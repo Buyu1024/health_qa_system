@@ -1,0 +1,90 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Sensitive configuration files
+config.ini
+*.env
+.env.local
+.env.production
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Model files (large files, should use Git LFS or download separately)
+rag_qa/models/bert_query_classifier/bert_results/
+rag_qa/models/bert_query_classifier/pytorch_model.bin
+rag_qa/models/bge-m3/pytorch_model.bin
+rag_qa/models/bge-reranker-large/pytorch_model.bin
+rag_qa/models/nlp_bert_document-segmentation_chinese-base/pytorch_model.bin
+rag_qa/models/bert-base-chinese/pytorch_model.bin
+
+# Data files (if contains sensitive data)
+mysql_qa/data/
+*.csv
+*.xlsx
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation (if auto-generated)
+*.md
+!README.md
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

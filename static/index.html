@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>膳食与慢病食养知识问答系统</title>
+    <!-- 引入 marked.js 用于 Markdown 渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f8fafb;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+        }
+        
+        .container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 1200px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .header-info h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .header-info p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff4444;
+            transition: background 0.3s;
+        }
+        
+        .status-dot.connected {
+            background: #4caf50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            background: #f8fafb;
+            scroll-behavior: smooth;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .welcome-message h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        
+        .welcome-message p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .quick-questions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .quick-question-btn {
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #555;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .quick-question-btn:hover {
+            border-color: #667eea;
+            background: #f5f7ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message.bot {
+            justify-content: flex-start;
+        }
+        
+        .message-wrapper {
+            display: flex;
+            gap: 12px;
+            max-width: 75%;
+        }
+        
+        .message.user .message-wrapper {
+            flex-direction: row-reverse;
+        }
+        
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .message.bot .avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .message.user .avatar {
+            background: #e3e8ee;
+        }
+        
+        .message-content {
+            padding: 14px 18px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+        
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-top-right-radius: 4px;
+        }
+        
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e8eaed;
+            border-top-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Markdown 样式优化 */
+        .message.bot .message-content h1,
+        .message.bot .message-content h2,
+        .message.bot .message-content h3,
+        .message.bot .message-content h4 {
+            margin: 16px 0 8px 0;
+            font-weight: 600;
+            color: #1a1a1a;
+            line-height: 1.4;
+        }
+        
+        .message.bot .message-content h1 {
+            font-size: 20px;
+            border-bottom: 2px solid #e8eaed;
+            padding-bottom: 8px;
+        }
+        
+        .message.bot .message-content h2 {
+            font-size: 18px;
+            border-bottom: 1px solid #e8eaed;
+            padding-bottom: 6px;
+        }
+        
+        .message.bot .message-content h3 {
+            font-size: 16px;
+        }
+        
+        .message.bot .message-content h4 {
+            font-size: 15px;
+        }
+        
+        .message.bot .message-content p {
+            margin: 8px 0;
+            line-height: 1.8;
+        }
+        
+        .message.bot .message-content ul,
+        .message.bot .message-content ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+        
+        .message.bot .message-content li {
+            margin: 4px 0;
+            line-height: 1.7;
+        }
+        
+        .message.bot .message-content li::marker {
+            color: #667eea;
+        }
+        
+        .message.bot .message-content strong {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+        
+        .message.bot .message-content em {
+            color: #666;
+            font-style: italic;
+        }
+        
+        .message.bot .message-content code {
+            background: #f5f7ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            color: #667eea;
+        }
+        
+        .message.bot .message-content pre {
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+            border: 1px solid #e8eaed;
+        }
+        
+        .message.bot .message-content pre code {
+            background: none;
+            padding: 0;
+            color: #333;
+        }
+        
+        .message.bot .message-content blockquote {
+            border-left: 4px solid #667eea;
+            padding: 8px 16px;
+            margin: 12px 0;
+            background: #f5f7ff;
+            border-radius: 0 8px 8px 0;
+            color: #555;
+        }
+        
+        .message.bot .message-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 12px 0;
+            font-size: 13px;
+        }
+        
+        .message.bot .message-content th,
+        .message.bot .message-content td {
+            border: 1px solid #e8eaed;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        
+        .message.bot .message-content th {
+            background: #f5f7ff;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .message.bot .message-content tr:nth-child(even) {
+            background: #fafbfc;
+        }
+        
+        .message.bot .message-content hr {
+            border: none;
+            border-top: 2px solid #e8eaed;
+            margin: 16px 0;
+        }
+        
+        .input-area {
+            padding: 16px 24px;
+            background: white;
+            border-top: 1px solid #e8eaed;
+        }
+        
+        .input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        #questionInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #dadce0;
+            border-radius: 24px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+        
+        #questionInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        #questionInput::placeholder {
+            color: #9aa0a6;
+        }
+        
+        #sendButton {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            min-width: 80px;
+        }
+        
+        #sendButton:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        #sendButton:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        #sendButton:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+            padding: 14px 18px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e8eaed;
+            border-top-left-radius: 4px;
+        }
+        
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% { 
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% { 
+                transform: translateY(-8px);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">🏥</div>
+                <div class="header-info">
+                    <h1>膳食与慢病食养咨询</h1>
+                    <p>专业健康顾问 · 基于权威指南</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">连接中...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="welcome-message" id="welcomeMessage">
+                <h2>您好！我是您的健康顾问</h2>
+                <p>我可以为您提供关于饮食营养、慢性病管理的专业建议<br>所有回答均基于国家卫健委发布的最新诊疗指南</p>
+                <div class="quick-questions">
+                    <button class="quick-question-btn" onclick="askQuestion('高血压患者日常饮食要注意什么？')">
+                        🫀 高血压饮食建议
+                    </button>
+                    <button class="quick-question-btn" onclick="askQuestion('糖尿病患者可以吃水果吗？')">
+                        🍎 糖尿病饮食指导
+                    </button>
+                    <button class="quick-question-btn" onclick="askQuestion('如何判断自己是否肥胖？')">
+                        ⚖️ 体重管理咨询
+                    </button>
+                    <button class="quick-question-btn" onclick="askQuestion('高尿酸血症应该避免哪些食物？')">
+                        🦐 痛风饮食禁忌
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea 
+                    id="questionInput" 
+                    placeholder="请输入您的健康问题..."
+                    rows="1"
+                ></textarea>
+                <button id="sendButton" onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let sessionId = null;
+        let currentMessageContent = null;
+        let isFirstMessage = true;
+        const chatContainer = document.getElementById('chatContainer');
+        const questionInput = document.getElementById('questionInput');
+        const sendButton = document.getElementById('sendButton');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        
+        // 连接 WebSocket
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/api/stream`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = function() {
+                console.log('WebSocket 连接成功');
+                statusDot.classList.add('connected');
+                statusText.textContent = '在线';
+                sessionId = generateUUID();
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'start') {
+                    // 收到开始信号，准备接收流式响应
+                    console.log('开始接收响应');
+                } else if (data.type === 'token') {
+                    // 收到流式token，追加到当前消息
+                    if (currentMessageContent) {
+                        // 累积原始文本并实时渲染 Markdown
+                        currentMessageContent._rawText = (currentMessageContent._rawText || '') + data.token;
+                        currentMessageContent.innerHTML = marked.parse(currentMessageContent._rawText);
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    }
+                } else if (data.type === 'end') {
+                    // 响应结束
+                    currentMessageContent = null;  // 重置
+                    hideTypingIndicator();
+                    sendButton.disabled = false;
+                    questionInput.disabled = false;
+                    console.log(`处理时间: ${data.processing_time.toFixed(2)}秒`);
+                } else if (data.type === 'error') {
+                    hideTypingIndicator();
+                    currentMessageContent = null;
+                    addMessage('bot', `❌ 错误: ${data.error}`);
+                    sendButton.disabled = false;
+                    questionInput.disabled = false;
+                }
+            };
+            
+            ws.onclose = function() {
+                console.log('WebSocket 连接关闭');
+                statusDot.classList.remove('connected');
+                statusText.textContent = '已断开';
+                
+                setTimeout(connectWebSocket, 3000);
+            };
+            
+            ws.onerror = function(error) {
+                console.error('WebSocket 错误:', error);
+            };
+        }
+        
+        // 快速提问
+        function askQuestion(question) {
+            questionInput.value = question;
+            sendMessage();
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            const question = questionInput.value.trim();
+            if (!question || !ws || ws.readyState !== WebSocket.OPEN) {
+                return;
+            }
+            
+            // 隐藏欢迎消息
+            if (isFirstMessage && welcomeMessage) {
+                welcomeMessage.style.display = 'none';
+                isFirstMessage = false;
+            }
+            
+            // 添加用户消息
+            addMessage('user', question);
+            
+            // 清空输入框
+            questionInput.value = '';
+            questionInput.style.height = 'auto';
+            questionInput.disabled = true;
+            sendButton.disabled = true;
+            
+            // 重置当前消息容器
+            currentMessageContent = null;
+            
+            // 显示正在输入指示器
+            showTypingIndicator();
+            
+            // 发送消息到服务器
+            const message = {
+                query: question,
+                source_filter: null,
+                session_id: sessionId
+            };
+            
+            ws.send(JSON.stringify(message));
+        }
+        
+        // 添加消息到聊天容器
+        function addMessage(sender, content) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+                    
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.className = 'message-wrapper';
+                    
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'avatar';
+            avatarDiv.textContent = sender === 'bot' ? '👨‍⚕️' : '👤';
+                    
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+                    
+            // 对机器人消息使用 Markdown 渲染
+            if (sender === 'bot') {
+                contentDiv.innerHTML = marked.parse(content);
+            } else {
+                contentDiv.textContent = content;
+            }
+                    
+            wrapperDiv.appendChild(avatarDiv);
+            wrapperDiv.appendChild(contentDiv);
+            messageDiv.appendChild(wrapperDiv);
+            chatContainer.appendChild(messageDiv);
+                    
+            // 滚动到底部
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // 追加到最后一条消息
+        function appendToLastMessage(text) {
+            const messages = chatContainer.querySelectorAll('.message.bot .message-content');
+            if (messages.length > 0) {
+                const lastMessage = messages[messages.length - 1];
+                lastMessage.textContent += text;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        }
+        
+        // 显示正在输入指示器，并准备接收流式响应
+        function showTypingIndicator() {
+            // 创建一个新的空消息容器用于接收流式响应
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            
+            const wrapperDiv = document.createElement('div');
+            wrapperDiv.className = 'message-wrapper';
+            
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'avatar';
+            avatarDiv.textContent = '👨‍⚕️';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.id = 'typingIndicator';
+            typingDiv.className = 'typing-indicator';
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            
+            contentDiv.appendChild(typingDiv);
+            wrapperDiv.appendChild(avatarDiv);
+            wrapperDiv.appendChild(contentDiv);
+            messageDiv.appendChild(wrapperDiv);
+            chatContainer.appendChild(messageDiv);
+            
+            // 设置当前消息容器为刚创建的内容div
+            currentMessageContent = contentDiv;
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // 隐藏正在输入指示器，并创建新消息容器
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        // 生成 UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        
+        // 回车发送，Shift+Enter换行
+        questionInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // 自动调整输入框高度
+        questionInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        
+        // 页面加载时连接 WebSocket
+        window.onload = function() {
+            connectWebSocket();
+            questionInput.focus();
+        };
+    </script>
+</body>
+</html>
