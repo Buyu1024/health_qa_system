@@ -10,7 +10,7 @@ from base.logger import logger
 from query_classifier import QueryClassifier  #   导入查询分类器
 from strategy_selector import StrategySelector  #   导入策略选择器
 from vector_store import VectorStore
-from self_verification_agent import SelfVerificationAgent  # 导入自验证代理
+from self_verification_pipeline import SelfVerificationPipeline  # 导入自验证流水线
 
 conf = Config()
 
@@ -23,18 +23,19 @@ class RAGSystem:
         self.query_classifier = QueryClassifier()
         self.stragy_selector = StrategySelector()
         
-        # 初始化自验证代理（可选）
+        # 初始化自验证流水线（可选）
         self.enable_verification = enable_verification
         if enable_verification:
-            self.verification_agent = SelfVerificationAgent(
+            self.verification_pipeline = SelfVerificationPipeline(
                 llm=llm,
                 max_refinement_iterations=2,
                 verification_threshold=0.9
             )
-            logger.info("自验证代理已启用")
+            logger.info("自验证流水线已启用")
         else:
-            self.verification_agent = None
-            logger.info("自验证代理未启用")
+            self.verification_pipeline = None
+
+            logger.info("自验证流水线未启用")
 
     def _retrieve_with_backtracking(self, query, source_filter):
         logger.info(f"使用回溯问题策略进行检索（查询：'{query}'）")
@@ -174,11 +175,11 @@ class RAGSystem:
                 context = ""
                 logger.info("未检索到相关文档，上下文为空")
             
-            # 如果启用了自验证，使用 Agent 生成答案
-            if self.enable_verification and self.verification_agent and context:
-                logger.info("使用自验证代理生成答案...")
+            # 如果启用了自验证，使用多轮 Prompt Engineering 流水线生成答案
+            if self.enable_verification and self.verification_pipeline and context:
+                logger.info("使用自验证流水线生成答案...")
                 try:
-                    verification_result = self.verification_agent.generate_verified_answer(
+                    verification_result = self.verification_pipeline.generate_verified_answer(
                         question=query,
                         context=context,
                         generate_initial=True
@@ -191,7 +192,7 @@ class RAGSystem:
                     for char in final_answer:
                         yield char
                 except Exception as e:
-                    logger.error(f"自验证代理失败，回退到标准模式: {e}")
+                    logger.error(f"自验证流水线失败，回退到标准模式: {e}")
                     # 回退到标准模式
                     prompt_input = self.rag_prompt.format(
                         context=context,

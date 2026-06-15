@@ -6,7 +6,7 @@
 
 - 🎯 **混合检索**：BM25 + BGE-M3 稠密向量 + Cross-Encoder 重排序
 -  **意图识别**：BERT 查询分类器精准区分通用知识与医疗咨询
-- ✅ **自验证机制**：Self-Verification Agent 降低幻觉问题
+- ✅ **自验证机制**：多轮 Prompt Engineering 流水线降低幻觉问题
 - 📊 **完整评估**：基于 Ragas 的专业评估体系
 - 🚀 **生产级架构**：FastAPI + WebSocket 流式响应 + Redis 缓存
 
@@ -101,7 +101,7 @@ health_qa_system/
 │   ├── core/               # 核心逻辑
 │   │   ├── rag_system.py          # RAG 主系统
 │   │   ├── query_classifier.py    # BERT 查询分类器
-│   │   ├── self_verification_agent.py  # 自验证 Agent
+│   │   ├── self_verification_pipeline.py  # 自验证流水线
 │   │   ├── vector_store.py        # 向量存储
 │   │   └── document_processor.py  # 文档处理
 │   ├── models/             # 模型文件

@@ -62,7 +62,7 @@ git commit -m "feat: 初始化医疗健康 RAG 问答系统
 
 - 实现混合检索（BM25 + BGE-M3 + Reranker）
 - 集成 BERT 查询分类器
-- 添加 Self-Verification Agent
+- 添加多轮 Prompt Engineering 自验证流水线
 - 配置 FastAPI + WebSocket 服务
 - 添加 Ragas 评估体系
 - 安全配置管理（config.ini 已忽略）"

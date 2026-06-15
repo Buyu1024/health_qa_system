@@ -1,4 +1,4 @@
-import os
+import os,sys
 
 import torch
 import numpy as np
@@ -12,8 +12,7 @@ from langchain.docstore.document import Document
 from sentence_transformers import CrossEncoder
 # 导入 hashlib 模块，用于生成唯一 ID 的哈希值
 import hashlib
-current_dir = os.path.dirname(os.path.realpath(__file__))
-parent_dir = os.path.dirname(current_dir)
+
 from base.logger import logger
 from base.config import Config
 

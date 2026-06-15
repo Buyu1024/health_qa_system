@@ -1,5 +1,5 @@
 """
-测试自验证代理的效果
+测试自验证流水线的效果
 对比使用和不使用自验证的 faithfulness 分数
 """
 import json
@@ -30,7 +30,7 @@ embeddings = DashScopeEmbeddings(
 )
 
 print("=" * 80)
-print("测试自验证代理对 Faithfulness 的提升效果")
+print("测试自验证流水线对 Faithfulness 的提升效果")
 print("=" * 80)
 
 # 方法1: 不使用自验证（原始答案）
@@ -56,13 +56,13 @@ faithfulness_original = result_original['faithfulness']
 faithfulness_original_average = sum(faithfulness_original)/len(faithfulness_original)
 print(f"原始答案的 Faithfulness: {faithfulness_original_average}")
 
-# 方法2: 使用自验证代理优化答案
-print("\n【方法2】使用自验证代理优化答案...")
+# 方法2: 使用自验证流水线优化答案
+print("\n【方法2】使用自验证流水线优化答案...")
 
-# 导入自验证代理
-from core.self_verification_agent import SelfVerificationAgent
+# 导入自验证流水线
+from core.self_verification_pipeline import SelfVerificationPipeline
 
-verification_agent = SelfVerificationAgent(
+verification_pipeline = SelfVerificationPipeline(
     llm=llm,
     max_refinement_iterations=2,
     verification_threshold=0.8
@@ -75,8 +75,8 @@ for i, item in enumerate(data):
 
     context = "\n".join(item["context"]) if isinstance(item["context"], list) else item["context"]
 
-    # 使用自验证代理生成答案
-    result = verification_agent.generate_verified_answer(
+    # 使用自验证流水线生成答案
+    result = verification_pipeline.generate_verified_answer(
         question=item["question"],
         context=context,
         generate_initial=True

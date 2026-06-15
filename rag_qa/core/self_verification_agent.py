@@ -1,10 +1,10 @@
-import re
+﻿import re
 from base.logger import logger
 from verification_prompts import VerificationPrompts
 
-class SelfVerificationAgent:
+class SelfVerificationPipeline:
     """
-    自验证代理 - 用于提高 RAG 系统答案的忠实度
+    自验证流水线（旧版/历史兼容文件）- 用于提高 RAG 系统答案的忠实度
     
     工作流程：
     1. 生成初始答案
@@ -14,9 +14,9 @@ class SelfVerificationAgent:
     5. 返回最终答案和验证报告
     """
     
-    def __init__(self, llm, max_refinement_iterations=2, verification_threshold=0.8):
+    def __init__(self, llm, max_refinement_iterations=2, verification_threshold=0.9):
         """
-        初始化自验证代理
+        初始化自验证流水线（旧版）
         
         Args:
             llm: 语言模型实例
